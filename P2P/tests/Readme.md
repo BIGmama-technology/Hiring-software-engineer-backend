@@ -1,0 +1,1 @@
+#Run test_all.py file then enter "1" to connect to client 1 then hit "Accept" to accept connection then you can send messages

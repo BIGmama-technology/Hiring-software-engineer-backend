@@ -1,0 +1,14 @@
+README.md
+setup.py
+clientserverpkg/__init__.py
+clientserverpkg/client.py
+clientserverpkg/server.py
+clientserverpkg.egg-info/PKG-INFO
+clientserverpkg.egg-info/SOURCES.txt
+clientserverpkg.egg-info/dependency_links.txt
+clientserverpkg.egg-info/requires.txt
+clientserverpkg.egg-info/top_level.txt
+tests/__init__.py
+tests/test.py
+tests/test_client.py
+tests/test_server.py

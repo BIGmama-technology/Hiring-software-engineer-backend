@@ -1,0 +1,11 @@
+README.md
+setup.py
+p2ppkg/Client.py
+p2ppkg/Client2.py
+p2ppkg/Server.py
+p2ppkg/__init__.py
+p2ppkg.egg-info/PKG-INFO
+p2ppkg.egg-info/SOURCES.txt
+p2ppkg.egg-info/dependency_links.txt
+p2ppkg.egg-info/requires.txt
+p2ppkg.egg-info/top_level.txt

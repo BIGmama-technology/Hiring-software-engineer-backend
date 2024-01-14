@@ -76,7 +76,7 @@ Start the server
 | :-------- | :------- | :-------------------------------- |
 | `username`      | `string` | **Required**. just use 'admin' for now |
 | `password`      | `string` | **Required**. just use 'admin' for now |
-| `cronExpression`      | `text` | **Required**. cron expression for when to rerun the script |
+| `cronExpression`      | `string` | **Required**. cron expression for when to rerun the script |
 | `script`      | `python file` | **Required**. your Python script |
 | `requirements`      | `text file` | **Required**. your dependencies file |
 

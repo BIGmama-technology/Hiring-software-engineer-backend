@@ -68,4 +68,39 @@ const runShellScript = async (localShellFilePath) => {
     container.modem.demuxStream(stream, process.stdout, process.stderr);
 };
 
-module.exports = {runPythonScript, runShellScript}
+const runDockerImage = async (localDockerImageFilePath) => {
+    const dockerImage = fs.readFileSync(localDockerImageFilePath);
+
+    const container = await docker.createContainer({
+        Image: dockerImage,
+        Tty: true,
+        Cmd: ['tail', '-f', '/dev/null'],
+        HostConfig: {
+            AutoRemove: true,
+        },
+    });
+
+    await container.start();
+
+    const logsStream = fs.createWriteStream('logs.txt', { flags: 'a' });
+
+    container.modem.demuxStream(container, logsStream, process.stdout, process.stderr, { hijack: true, stdin: true });
+};
+
+async function executeScriptBasedOnType(scriptType, scriptFile, requirementsFile) {
+    switch (scriptType) {
+        case 'shell':
+            await runShellScript(scriptFile);
+            break;
+        case 'python':
+            await runPythonScript(scriptFile, requirementsFile);
+            break;
+        case 'docker':
+            await runDockerImage(scriptFile);
+            break;
+        default:
+            throw new Error('Invalid script type');
+    }
+}
+
+module.exports = {executeScriptBasedOnType}

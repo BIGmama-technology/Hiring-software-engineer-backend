@@ -1,10 +1,11 @@
 const express = require('express');
 const schedule = require('node-schedule');
 const bodyParser = require('body-parser');
-const {runPythonScript,  runShellScript} = require("./docker-helpers");
+const {executeScriptBasedOnType} = require("./docker-helpers");
 const {authenticateUser} = require("./middleware");
 const multer = require('multer');
 const fs = require('fs');
+const {listScheduledJobs} = require("./schedule-helpers");
 
 const upload = multer({dest: 'uploads/'})
 
@@ -14,44 +15,36 @@ const port = 3000;
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
+app.post("/execute", upload.fields([{name: 'script', maxCount: 1}, {name: 'requirements', maxCount: 1}]), authenticateUser, async (req, res) => {
+    const scriptFile = req.files['script'] ? req.files['script'][0].path || "" : "";
+    const requirementsFile = req.files['requirements'] ? req.files['requirements'][0].path || "" : "";
+    const cronExpression = req.body.cronExpression || '';
+    const title = req.body.title || '';
+    const scriptType = req.body.scriptType || '';
 
-app.post('/execute-script', upload.single('script'), authenticateUser, async (req, res) => {
-    const scriptFile = req.file.path;
+    if(scriptType === '' || scriptFile === '' || (cronExpression !== "" && title === "")){
+        res.status(400).json("missing required parameters");
+    }
 
-    runShellScript(scriptFile)
-        .then(() => {
-            res.json("executed shell script");
-        })
-});
+    if(cronExpression === ''){
+        executeScriptBasedOnType(scriptType, scriptFile, requirementsFile)
+            .then(() => {
+                res.json("executed script");
+            })
+    }else{
+        executeScriptBasedOnType(scriptType, scriptFile, requirementsFile)
+            .then(() => {
+                schedule.scheduleJob(title, cronExpression, async () => {
+                    try {
+                        await executeScriptBasedOnType(scriptType, scriptFile, requirementsFile)
+                    } catch (error) {
+                        console.error('Error executing scheduled task:', error);
+                    }
+                });
+                res.json("executed script");
+            })
+    }
 
-app.post('/execute-python-script', upload.fields([{name: 'script', maxCount: 1}, {name: 'requirements', maxCount: 1}]), authenticateUser, async (req, res) => {
-    const scriptFile = req.files['script'][0].path;
-    const requirementsFile = req.files['requirements'][0].path;
-
-
-    runPythonScript(scriptFile, requirementsFile)
-        .then(() => {
-            res.json("executed python script");
-        })
-
-});
-
-app.post('/schedule-python-script', upload.fields([{name: 'script', maxCount: 1}, {name: 'requirements', maxCount: 1}]), authenticateUser, async (req, res) => {
-    const cronExpression = req.body.cronExpression || '0 0 * * *';
-    const scriptFile = req.files['script'][0].path;
-    const requirementsFile = req.files['requirements'][0].path;
-
-    runPythonScript(scriptFile, requirementsFile)
-        .then(() => {
-            schedule.scheduleJob(cronExpression, async () => {
-                try {
-                    await runPythonScript(scriptFile, requirementsFile)
-                } catch (error) {
-                    console.error('Error executing scheduled task:', error);
-                }
-            });
-            res.json("executed python script");
-        })
 });
 
 app.get('/logs', (req, res) => {
@@ -64,6 +57,19 @@ app.get('/logs', (req, res) => {
         }
     });
 });
+
+
+
+app.get('/jobs', (req, res) => {
+    try{
+        const scheduledJobsJSON = listScheduledJobs();
+        res.status(200).json(scheduledJobsJSON);
+    }
+    catch(error){
+        console.log(error);
+        console.error('Error executing scheduled task:', error);
+    }
+})
 
 
 app.listen(port, () => {

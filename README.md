@@ -11,8 +11,9 @@ Clone the project
 ```bash
   git clone https://github.com/Bretis2019/Hiring-software-engineer-backend.git
 ```
+Make sure the docker engine is running on your machine.
 
-You might have to pull python:3.9-alpine image
+You might have to pull python:3.9-alpine image.
 
 ```bash
   docker pull python:3.9-alpine
@@ -41,44 +42,27 @@ Start the server
   GET /logs
 ```
 
-#### Run Shell script
+#### Get scheduled jobs
 
 ```http
-  POST /execute-script
+  GET /jobs
+```
+
+#### Run or schedule a script
+
+```http
+  POST /execute
 ```
 
 | Parameter | Type     | Description                       |
 | :-------- | :------- | :-------------------------------- |
 | `username`      | `string` | **Required**. just use 'admin' for now |
 | `password`      | `string` | **Required**. just use 'admin' for now |
-| `script`      | `shell file` | **Required**. your Shell script |
-
-#### Run Python script
-
-```http
-  POST /execute-python-script
-```
-
-| Parameter | Type     | Description                       |
-| :-------- | :------- | :-------------------------------- |
-| `username`      | `string` | **Required**. just use 'admin' for now |
-| `password`      | `string` | **Required**. just use 'admin' for now |
-| `script`      | `python file` | **Required**. your Python script |
-| `requirements`      | `text file` | **Required**. your dependencies file |
-
-#### schedule Python script
-
-```http
-  POST /schedule-python-script
-```
-
-| Parameter | Type     | Description                       |
-| :-------- | :------- | :-------------------------------- |
-| `username`      | `string` | **Required**. just use 'admin' for now |
-| `password`      | `string` | **Required**. just use 'admin' for now |
-| `cronExpression`      | `string` | **Required**. cron expression for when to rerun the script |
-| `script`      | `python file` | **Required**. your Python script |
-| `requirements`      | `text file` | **Required**. your dependencies file |
+| `scriptType`      | `string` | **Required**. the type of your script. either `python`, `shell` or `docker`|
+| `script`      | `script file` | **Required**. your script that will be executed.|
+| `requirements`      | `text file` |your dependencies file |
+| `cronExpression`      | `string` | **Required if you want to schedule**. cron expression for when to rerun the script |
+| `title`      | `string` | **Required if you want to schedule**. the title of your scheduled job. |
 
 
 ## Usage/Examples
@@ -118,6 +102,39 @@ random2==1.0.1
 echo "Hello from the Docker container!"
 
 ```
+
+#### Run a shell script
+
+```http
+  POST /execute
+```
+
+| Parameter | Value     |
+| :-------- | :------- |
+| `username`      | `admin`|
+| `password`      | `admin`|
+| `scriptType`      | `shell`|
+| `script`      | `script file`|
+
+#### Schedule a python script
+
+```http
+  POST /execute
+```
+
+| Parameter | Value     |
+| :-------- | :------- |
+| `username`      | `admin` |
+| `password`      | `admin` |
+| `scriptType`      | `python`|
+| `script`      | `script file`|
+| `requirements`      | `text file`|
+| `cronExpression`      | `0 8 * * *`|
+| `title`      | `rng-test`|
+
+
+
+
 
 
 ## Related
